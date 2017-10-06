@@ -1,0 +1,33 @@
+version: "2"
+
+services:
+  log_service:
+    build: ./
+    container_name: log_service
+    ports: ["514", "514/udp"]
+    volumes:
+      - "rsyslog.conf:/etc/rsyslog.conf"
+    networks:
+      - back-tier
+
+  log_agent:
+    build: ./
+    container_name: log_agent
+    links: ["log_service"]
+    volumes:
+      - "/var/lib/docker/containers:/var/log/containers"
+      - "agent.conf:/etc/rsyslog.conf"
+    networks:
+      - back-tier
+
+  app:
+    image: nginx:alpine
+    container_name: app
+    ports: ["8080:80"]
+    networks:
+      - front-tier
+      - back-tier
+
+networks:
+  front-tier:
+  back-tier:
