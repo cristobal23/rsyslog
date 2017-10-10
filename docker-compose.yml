@@ -14,9 +14,15 @@ services:
     build: ./
     container_name: log_agent
     links: ["log_service"]
+    entrypoint: sh entrypoint.sh
+    command: rsyslogd -n
+    environment:
+      - LOGFILES_PATH=/var/log/containers/*/*.log
+      - LOGSERVICE_HOST=log_service
     volumes:
       - "/var/lib/docker/containers:/var/log/containers"
-      - "agent.conf:/etc/rsyslog.conf"
+      - "./agent.conf:/etc/rsyslog.conf.tmpl"
+      - "./entrpoint.sh:/entrypoint.sh"
     networks:
       - back-tier
 
@@ -26,7 +32,6 @@ services:
     ports: ["8080:80"]
     networks:
       - front-tier
-      - back-tier
 
 networks:
   front-tier:
